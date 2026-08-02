@@ -1,4 +1,5 @@
 # global-trade-disruption-prediction
+
 Predicts commodity price movements (WTI crude oil) from global supply chain disruption signals — geopolitical events (GDELT), trade flows (UN Comtrade), and logistics performance (World Bank), built on real API data rather than synthetic sources.
 
 ## What This Predicts
@@ -9,12 +10,12 @@ level, to avoid the model just learning long-term inflation trends.
 
 ## Data Sources (real APIs, no synthetic data)
 
-| Source | What it provides | Role |
-|---|---|---|
-| FRED API | WTI oil price history | Target variable + lagged/momentum features |
-| GDELT | Geopolitical event intensity, conflict scores | Primary disruption signal |
-| UN Comtrade API | Bilateral trade volume between countries | Supply-side secondary signal |
-| World Bank API | Logistics Performance Index, GDP, trade % of GDP | Slower-moving country-level context |
+| Source          | What it provides                                 | Role                                       |
+| --------------- | ------------------------------------------------ | ------------------------------------------ |
+| FRED API        | WTI oil price history                            | Target variable + lagged/momentum features |
+| GDELT           | Geopolitical event intensity, conflict scores    | Primary disruption signal                  |
+| UN Comtrade API | Bilateral trade volume between countries         | Supply-side secondary signal               |
+| World Bank API  | Logistics Performance Index, GDP, trade % of GDP | Slower-moving country-level context        |
 
 ## Planned Tech Stack
 
@@ -39,6 +40,7 @@ level, to avoid the model just learning long-term inflation trends.
 - [ ] Dockerfile + Railway deployment
 
 ## Project Structure (planned)
+
 global-trade-disruption-prediction/
 ├── data/
 ├── notebooks/
@@ -46,11 +48,11 @@ global-trade-disruption-prediction/
 ├── scripts/
 │ ├── fred_collector.py
 │ ├── gdelt_collector.py
-│ ├── comtrade_collector.py
-│ └── worldbank_collector.py
+│ └── comtrade_collector.py
 ├── config/
 ├── processing/
 ├── app/
+├── trained_models/
 ├── pipeline.py
 ├── train_pipeline.py
 ├── predict.py
