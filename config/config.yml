@@ -1,6 +1,5 @@
-model:
-  pipeline_name: global-trade-disruption-prediction
-  pipeline_save_file: trained_model/final_model.pkl
+pipeline_name: global-trade-disruption-prediction
+pipeline_save_file: trained_model/final_model.pkl
 
 data_folder: data/
 aluminum: aluminum.csv
