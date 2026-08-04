@@ -40,14 +40,15 @@ level, to avoid the model just learning long-term inflation trends.
 - [ ] Dockerfile + Railway deployment
 
 ## Project Structure (planned)
+
 global-trade-disruption-prediction/
 ├── data/
 ├── notebooks/
-│   └── research.ipynb
+│ └── research.ipynb
 ├── scripts/
-│   ├── fred_collector.py
-│   ├── gdelt_collector.py
-│   └── comtrade_collector.py
+│ ├── fred_collector.py
+│ ├── gdelt_collector.py
+│ └── comtrade_collector.py
 ├── config/
 ├── processing/
 ├── app/

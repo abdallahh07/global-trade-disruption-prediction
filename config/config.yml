@@ -1,0 +1,60 @@
+model:
+  pipeline_name: global-trade-disruption-prediction
+  pipeline_save_file: trained_model/final_model.pkl
+
+data_folder: data/
+aluminum: aluminum.csv
+corn: corn.csv
+wheat: wheat.csv
+gold: gold.csv
+iron_ore: iron_ore.csv
+natural_gas: natural_gas.csv
+oil_brent: oil_brent.csv
+oil_wti: oil_wti.csv
+comtrade_china: comtrade_china.csv
+comtrade_egypt: comtrade_egypt.csv
+comtrade_iran: comtrade_iran.csv
+comtrade_usa: comtrade_usa.csv
+gdelt_covid_supply_chain: gdelt_covid_supply_chain.csv
+gdelt_red_sea_shipping: gdelt_red_sea_shipping.csv
+gdelt_russia_ukraine_conflict: gdelt_russia_ukraine_conflict.csv
+gdelt_strait_of_hormuz: gdelt_strait_of_hormuz.csv
+
+split_rate: 0.8
+
+target: oil_wti
+
+features:
+  - oil_brent
+  - natural_gas
+  - wheat
+  - corn
+  - gold
+  - aluminum
+  - iron_ore
+  - is_covid_period
+  - is_russia_ukraine_period
+  - is_red_sea_period
+  - is_hormuz_period
+
+ffill_columns:
+  - oil_wti
+  - oil_brent
+  - natural_gas
+  - wheat
+  - corn
+  - gold
+  - aluminum
+  - iron_ore
+
+features_to_drop:
+  - oil_wti
+  - date
+  - hormuz_risk
+  - red_sea_risk
+  - russia_ukraine_risk
+  - covid_risk
+  - egypt_trade_value
+  - iran_trade_value
+  - china_trade_value
+  - usa_trade_value
