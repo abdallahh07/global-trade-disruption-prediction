@@ -216,3 +216,34 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Environments
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+
+# Data (large/raw files shouldn't be tracked)
+data/
+*.csv
+
+# Trained models
+trained_model/
+*.pkl
+*.joblib
+
+# Charts / outputs
+charts/
+*.png
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Environment variables / secrets
+.env
