@@ -1,64 +1,110 @@
-# global-trade-disruption-prediction
+# Global Trade Disruption & Commodity Price Prediction
 
-Predicts commodity price movements (WTI crude oil) from global supply chain disruption signals — geopolitical events (GDELT), trade flows (UN Comtrade), and logistics performance (World Bank), built on real API data rather than synthetic sources.
+Predicting WTI crude oil prices from real-world supply chain disruption signals — built entirely on live API data (FRED, GDELT, UN Comtrade) rather than a synthetic dataset.
 
-## What This Predicts
+## Overview
 
-**Target:** percentage change in WTI crude oil price over a forward window
-(e.g. next 30 days), given current disruption signals — not the raw price
-level, to avoid the model just learning long-term inflation trends.
+This project predicts daily WTI crude oil prices using a combination of:
+- **Correlated commodity prices** (Brent crude, natural gas, wheat, corn, gold, aluminum, iron ore)
+- **Geopolitical risk period flags** derived from real-world disruption events (COVID-19, Russia-Ukraine conflict, Red Sea shipping crisis, Strait of Hormuz tensions)
 
-## Data Sources (real APIs, no synthetic data)
+The model is served via a FastAPI application, containerized with Docker, and deployed on Railway.
 
-| Source          | What it provides                                 | Role                                       |
-| --------------- | ------------------------------------------------ | ------------------------------------------ |
-| FRED API        | WTI oil price history                            | Target variable + lagged/momentum features |
-| GDELT           | Geopolitical event intensity, conflict scores    | Primary disruption signal                  |
-| UN Comtrade API | Bilateral trade volume between countries         | Supply-side secondary signal               |
-| World Bank API  | Logistics Performance Index, GDP, trade % of GDP | Slower-moving country-level context        |
+## Data Sources
 
-## Planned Tech Stack
+| Source | Data | Frequency |
+|---|---|---|
+| **FRED** | Oil (WTI, Brent), natural gas, wheat, corn, aluminum, iron ore | Daily / Monthly |
+| **Yahoo Finance** | Gold | Daily |
+| **GDELT** | Geopolitical event intensity (Hormuz, Red Sea, Russia-Ukraine, COVID) | Daily |
+| **UN Comtrade** | Bilateral trade volume (Egypt, Iran, China, USA) | Yearly |
 
-- Python, pandas, NumPy
-- scikit-learn, XGBoost, LightGBM, CatBoost (model comparison, same as prior projects)
-- FastAPI + Uvicorn for serving predictions
-- Docker + Railway for deployment
-- joblib for pipeline serialization
+Data spans 2000–2026.
 
-## Roadmap
+## Model
 
-- [ ] `scripts/fred_collector.py` — pull WTI oil price history
-- [ ] `scripts/gdelt_collector.py` — pull geopolitical event scores
-- [ ] `scripts/comtrade_collector.py` — pull bilateral trade volume
-- [ ] `scripts/worldbank_collector.py` — pull Logistics Performance Index, GDP
-- [ ] Merge all sources into one dataset, aligned by date
-- [ ] Construct target column (% change in oil price, forward window)
-- [ ] EDA — distributions, correlations, event-driven anomalies (COVID, Russia-Ukraine, Red Sea, Hormuz)
-- [ ] Feature engineering (lagged values, rolling windows, event intensity aggregation)
-- [ ] Model comparison (RandomForest, GradientBoosting, XGBoost, CatBoost, LightGBM)
-- [ ] Standard production package structure (config, processing, pipeline, train_pipeline, predict, app/)
-- [ ] Dockerfile + Railway deployment
+**Linear Regression** was selected after comparing against RandomForestRegressor, XGBRegressor, and LGBMRegressor. Despite the tree-based ensembles achieving near-perfect training scores, they overfit and generalized poorly on the chronological test split. Linear Regression showed the smallest train-test gap and the best test performance.
 
-## Project Structure (planned)
+| Metric | Score |
+|---|---|
+| R² (test) | ~0.93 |
+| MAE | ~2.9 |
+| MSE | ~12.3 |
 
-global-trade-disruption-prediction/
-├── data/
-├── notebooks/
-│ └── research.ipynb
-├── scripts/
-│ ├── fred_collector.py
-│ ├── gdelt_collector.py
-│ └── comtrade_collector.py
+`oil_brent` is by far the dominant predictor, reflecting the tight real-world correlation between WTI and Brent crude benchmarks. The geopolitical risk period flags contribute comparatively little once correlated commodity prices are included — their effect appears to already be captured indirectly through commodity price movements.
+
+## Project Structure
+
+```
 ├── config/
+│   ├── config.yml          # Paths, feature lists, split ratio
+│   └── config.py           # Pydantic-validated config loader
 ├── processing/
+│   ├── data_manager.py     # CSV loading, model save/load
+│   └── features.py         # Merging, cleaning, feature engineering
+├── pipeline.py              # StandardScaler + LinearRegression pipeline
+├── train_pipeline.py        # End-to-end training script
+├── predict.py                # Loads trained model, returns predictions
 ├── app/
-├── trained_models/
-├── pipeline.py
-├── train_pipeline.py
-├── predict.py
+│   ├── schemas.py           # Request validation schema
+│   ├── api.py                # /predict endpoint
+│   └── main.py                # FastAPI app entry point
 ├── Dockerfile
-└── requirements.txt
+├── requirements.txt
+└── trained_model/            # Saved pipeline (generated by training)
+```
 
-## Status
+## Setup
 
-🚧 In progress — data collection phase.
+```bash
+pip install -r requirements.txt
+```
+
+## Training
+
+```bash
+python train_pipeline.py
+```
+Trains the pipeline on the full dataset and saves it to `trained_model/final_model.pkl`.
+
+## Running the API
+
+```bash
+python app/main.py
+```
+The API will be available at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
+
+### Example request
+
+```
+POST /predict
+{
+  "oil_brent": 82.5,
+  "natural_gas": 3.1,
+  "wheat": 600,
+  "corn": 450,
+  "gold": 2400,
+  "aluminum": 2500,
+  "iron_ore": 110,
+  "is_covid_period": 0,
+  "is_russia_ukraine_period": 0,
+  "is_red_sea_period": 0,
+  "is_hormuz_period": 0
+}
+```
+
+Returns a predicted WTI oil price.
+
+## Deployment
+
+Containerized with Docker and deployed on Railway.
+
+## Tech Stack
+
+Python · pandas · scikit-learn · FastAPI · Uvicorn · Pydantic · Docker · Railway
+
+## Future Improvements
+
+- Investigate residual heteroscedasticity (error spread widens at higher price levels) — potentially via log-transformed target or weighted regression
+- Reassess whether binary risk period flags are the right representation, versus intensity-based scores
+- Add feature engineering for date-derived seasonality (month, quarter)
